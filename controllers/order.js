@@ -1,5 +1,7 @@
-const Order  =  require('../models/order');
 const nodemailer = require('nodemailer');
+
+const Order  =  require('../models/order');
+const Theatre = require('../models/theatre');
 
 
 function sendMail(data){
@@ -49,6 +51,7 @@ exports.createOrder = async (req,res,next) =>{
     const screenToTime = req.body.screenToTime;
     const price = req.body.price;
     const numberOfSeats = req.body.numberOfSeats;
+    const slotName  =  req.body.slotName;
 
     const order = new Order({
         fullName:fullName,
@@ -63,6 +66,31 @@ exports.createOrder = async (req,res,next) =>{
     });
 
     try {
+        let resultTheatre = await Theatre.findOne({theatreName:theatreName,screenDate:screenDate});
+     //  console.log(await Theatre.find({theatreName:theatreName,screenDate:screenDate}));
+        console.log("obtained theatre " + resultTheatre)
+         if(resultTheatre.isMorning === false && slotName === "MORNING"){
+            resultTheatre.isMorning =  true;
+            await resultTheatre.save();
+        }
+       else if(resultTheatre.isAfternoon === false && slotName === "AFTERNOON"){
+            resultTheatre.isAfternoon =  true;
+            await resultTheatre.save();
+        }
+       else if(resultTheatre.isEvening === false && slotName === "EVENING"){
+            resultTheatre.isEvening =  true;
+            await resultTheatre.save();
+        }
+        else if(resultTheatre.isNight === false && slotName === "NIGHT"){
+            resultTheatre.isEvening =  true;
+            await resultTheatre.save();
+        }
+        else{
+         return res.status(400).json({
+                message :"Please enter the input in correct formate"
+            });
+        } 
+        
         let resultOrder  =  await order.save();
 
         sendMail(resultOrder);
@@ -79,6 +107,51 @@ exports.createOrder = async (req,res,next) =>{
         next(err);
     }
 
+
+
+}
+
+
+exports.availableSlots  =  async (req,res,next) => {
+    console.log(req.query);
+
+    const theatreName = req.query.theatreName;
+    const screenDate  =  req.query.screenDate;
+
+    // TODO : date validation (date must be greater than todays date)
+
+    try {
+        
+        const theatre  = await Theatre.find({theatreName:theatreName,screenDate:screenDate});
+        
+        console.log("found theatre " + theatre);
+        if(theatre.length === 0){
+            const createdtheatre = new Theatre({
+                theatreName : theatreName,
+                screenDate:screenDate
+            });
+
+         let resultTheatre  =  await createdtheatre.save();
+
+         res.status(200).json({
+            message:"available slots",
+            theatre:resultTheatre
+         })
+
+        }
+        else{
+            res.status(200).json({
+                message: "available slots",
+                theatre: theatre
+            });
+        }
+
+    } catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+          }
+        next(err);
+    }
 
 
 }

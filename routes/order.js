@@ -25,6 +25,8 @@ router.put('/signup',[
 
 router.post('/order',orderController.createOrder);
 
+router.get('/available-slots',orderController.availableSlots);
+
 
 
 module.exports =  router;
