@@ -38,6 +38,10 @@ const orderSchema  =  new Schema({
     numberOfSeats:{
         type:Number,
         required:true
+    },
+    paymentStatus:{
+        type:Boolean,
+        default:false
     }
 
 
