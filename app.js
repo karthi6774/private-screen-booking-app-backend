@@ -24,10 +24,10 @@ app.use('/book-now',orderRoutes);
 app.use('/auth',authRoutes);
 
 
-/* app.get('/', (req, res) => {
-  console.log("here");
-    res.send('Hello World!')
-}) */
+ app.get('/', (req, res) => {
+  console.log(req.body);
+    res.send(req.body)
+}) 
 
 
 app.use((error, req, res, next) => {

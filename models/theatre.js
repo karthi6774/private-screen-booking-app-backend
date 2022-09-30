@@ -11,25 +11,37 @@ const theatreSchema  = new Schema({
         enum :[constants.THEATRE1,constants.THEATRE2,constants.THEATRE3],
         required : true
     },
+    price:{
+        type:Number,
+        default:1000
+    },
+    seats:{
+        type:Number,
+        default:4
+    },
+    hours:{
+        type:Number,
+        default:3
+    },
     screenDate:{
-        type:Date,
+        type:String,
         required:true
     },
     isMorning:{
         type:Boolean,
-        default:false
+        default:true
     },
     isAfternoon:{
         type:Boolean,
-        default:false
+        default:true
     },
     isEvening:{
         type:Boolean,
-        default:false
+        default:true
     },
     isNight:{
         type:Boolean,
-        default:false
+        default:true
     }
 },{timestamps:true});
 

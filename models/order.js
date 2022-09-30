@@ -20,7 +20,7 @@ const orderSchema  =  new Schema({
         required:true
     },
     screenDate:{
-        type:Date,
+        type:String,
         required:true
     },
     screenFromTime:{
@@ -43,11 +43,7 @@ const orderSchema  =  new Schema({
         type:Boolean,
         default:false
     }
-
-
-
-
-
+    
 },
 {timestamps:true});
 
