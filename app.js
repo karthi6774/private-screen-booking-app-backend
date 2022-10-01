@@ -39,10 +39,16 @@ app.use((error, req, res, next) => {
 });
 
 
+let port = process.env.PORT;
+if (port == null || port == "") {
+  port = 3000;
+}
+
+
 mongoose
   .connect(process.env.DB_URL, { useNewUrlParser: true })
   .then(() => {
-    app.listen(process.env.PORT,() =>{
+    app.listen(port,() =>{
         console.log(`app started and listening at port ${process.env.PORT}`)
     })
   })
