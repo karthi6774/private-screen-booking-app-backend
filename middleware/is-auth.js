@@ -5,9 +5,10 @@ module.exports = (req,res,next) =>{
     let decodedToken;
 
     try {
-        const authHeader =  req.get('Authorization');
+        let authHeader =  req.get('Authorization');
+        authHeader  =  authHeader.split(' ')[1];
 
-      //  console.log(authHeader);
+      console.log("auth header " + req);
         if(!authHeader){
             const error  =  new Error('Not authenticated');
             error.statusCode  =  401;

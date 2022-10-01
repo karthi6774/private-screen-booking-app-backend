@@ -20,10 +20,22 @@ function sendMail(data){
         from: process.env.EMAIL_SENDER,
        /*  to: 'user1@example.com, user2@example.com', */
        to:data.email,
-        subject: 'Nice Nodemailer test',
-        text: 'Hey there, it’s our first message sent with Nodemailer ;) ',
-        html: `<b>Hey there! </b><br> This is our first message sent with Nodemailer
-       order details ${data}
+        subject: 'Order Confirmed ,And Payment is still pending',
+        text: 'Please ping whatsapp for payment info. our whatsapp number +91 1234567890) ',
+        html: `
+        <b>Hey ${data.fullName} 
+        </b><br> This is your confirmed order details
+        <br> Order Id : ${data._id}
+        <br>Theatre Name : ${data.theatreName}
+        <br>Date : ${data.screenDate}
+        <br>PaymentStatus: ${data.paymentStatus}
+        <br>Slot Name : ${data.slotName}
+        <br>Price : ${data.price}
+        <br>Number of seats : ${data.numberOfSeats}
+
+       <hr>
+       <p>Please Make a payment as soon as possible ,otherwise slot confirmation willbe cancelled</p>
+       Thank You
         `
 
     };
@@ -39,6 +51,8 @@ function sendMail(data){
 
 
 }
+
+
 
 exports.createOrder = async (req,res,next) =>{
     
@@ -78,7 +92,8 @@ exports.createOrder = async (req,res,next) =>{
             screenFromTime:screenFromTime,
             screenToTime:screenToTime,
             price:price,
-            numberOfSeats:numberOfSeats
+            numberOfSeats:numberOfSeats,
+            slotName:slotName
         });
     
         console.log(order.screenDate);
@@ -86,7 +101,10 @@ exports.createOrder = async (req,res,next) =>{
 
         let resultTheatre = await Theatre.findOne({theatreName:theatreName,screenDate:screenDate});
      //  console.log(await Theatre.find({theatreName:theatreName,screenDate:screenDate}));
-        console.log("obtained theatre " + resultTheatre)
+        console.log("obtained theatre " + resultTheatre);
+
+        order.price  = resultTheatre.price;
+        order.numberOfSeats = resultTheatre.seats;
          if(resultTheatre.isMorning === true && slotName === "MORNING"){
             resultTheatre.isMorning = false;
             await resultTheatre.save();

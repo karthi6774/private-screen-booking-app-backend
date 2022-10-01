@@ -23,6 +23,11 @@ const orderSchema  =  new Schema({
         type:String,
         required:true
     },
+    slotName :{
+        type:String,
+        required :true
+    },
+
     screenFromTime:{
         type:Date,
         required:true
