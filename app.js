@@ -1,14 +1,24 @@
 const express = require('express')
 const mongoose = require("mongoose")
 const dotenv = require('dotenv');
+const morgan = require('morgan');
 
 const orderRoutes  =  require('./routes/order');
 const authRoutes  =  require('./routes/auth');
+const healthRoutes  = require('./routes/healthchecker');
+
+const { userLogger }  = require('./logger');
+
+
+
+
 
 dotenv.config();
 const app = express();
 
 app.use(express.json());
+
+app.use(morgan('combined'));
 
 
 app.use((req,res,next) =>{
@@ -22,16 +32,17 @@ app.use((req,res,next) =>{
 //routes
 app.use('/book-now',orderRoutes);
 app.use('/auth',authRoutes);
+app.use('/health',healthRoutes);
 
 
- app.get('/', (req, res) => {
-  console.log(req.body);
-    res.send(req.body)
-}) 
+
 
 
 app.use((error, req, res, next) => {
-  console.log(error);
+  userLogger.error('an error occured ' , {
+    error : `${error}`
+    } )
+  //console.log(error);
  const status = error.statusCode || 500;
   const message = error.message;
   const data = error.data;
@@ -49,7 +60,7 @@ mongoose
   .connect(process.env.DB_URL, { useNewUrlParser: true })
   .then(() => {
     app.listen(port,() =>{
-        console.log(`app started and listening at port ${process.env.PORT}`)
+        userLogger.info(`app started and listening at port ${process.env.PORT}`)
     })
   })
 

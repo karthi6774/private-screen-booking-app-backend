@@ -7,6 +7,8 @@ const nodemailer = require('nodemailer');
 
 const { validationResult} =  require('express-validator');
 
+const { manualPaymentLogger }  = require('../logger');
+
 
 function sendMailForPaymentSuccess(data){
     var transport = nodemailer.createTransport({
@@ -43,10 +45,15 @@ function sendMailForPaymentSuccess(data){
 
     transport.sendMail(mailOptions, (error, info) => {
         if (error) {
-            return console.log(error);
+            return manualPaymentLogger.error('error occured while sending payment confirmation mail',{
+                error:`${error}`
+            });;
         }
-        console.log('Message sent: %s', info.messageId);
+        manualPaymentLogger.info('Message sent:', {
+            messageId : `${info.messageId}`
+        });
 });
+
 
 
 
@@ -77,9 +84,21 @@ exports.singup = async (req,res,next) =>{
             password:hashedPassword,
             role:role
         });
+
+
      let result  =  await user.save();
+
+     manualPaymentLogger.info('user created ' , {
+        username : `${ result.username}`,
+        role : `${ result.role }`
+     });
+
         res.status(201).json({message:'User created',userId : result._id});
     } catch (error) {
+        manualPaymentLogger.error('error occured while creating a user ' ,{
+            error : `${error}`
+        });
+
         next(error);
     }
 };
@@ -87,6 +106,11 @@ exports.singup = async (req,res,next) =>{
 exports.login  = async ( req,res,next) =>{
     const username  =  req.body.username;
     const password  =  req.body.password;
+
+    manualPaymentLogger.info('login request '  , {
+        username : `${username}`
+    })
+
     let loadedUser;
 
     try {
@@ -94,6 +118,9 @@ exports.login  = async ( req,res,next) =>{
 
         if(!user){
             const error  =  new Error('No user found');
+            manualPaymentLogger.info('no user found ', {
+                username : `${username}`
+            })
             error.statusCode = 401;
             throw error;
         }
@@ -103,6 +130,10 @@ exports.login  = async ( req,res,next) =>{
  
         if(!isEqual){
             const error  =  new Error('wrong password');
+            manualPaymentLogger.info('wrong password for given user', {
+                username : `${username}`
+            })
+
             error.statusCode = 401;
             throw error;
         }
@@ -114,8 +145,15 @@ exports.login  = async ( req,res,next) =>{
         process.env.TOKEN_SECRET_KEY,{expiresIn:'10hr'}
         );
 
+        manualPaymentLogger.info('login success ', {
+            username : `${username}`
+        })
+
         res.status(200).json({token:token,userId:loadedUser._id.toString()});
     } catch (error) {
+        manualPaymentLogger.error('error occured while creating a user ' ,{
+            error : `${error}`
+        });
         next(error)
     }
 
@@ -137,8 +175,13 @@ exports.login  = async ( req,res,next) =>{
 
         let pendingPaymentsOrder =await Order.find({paymentStatus:false});
 
+        manualPaymentLogger.info('getting all orders with pending payments')
+
         res.status(200).json({pendingPaymentsOrder:pendingPaymentsOrder});
     } catch (error) {
+        manualPaymentLogger.error('error occured while getting all orders with pending payments ' ,{
+            error : `${error}`
+        });
         next(error);
     }
 };
@@ -164,6 +207,11 @@ exports.login  = async ( req,res,next) =>{
 
         let resultOrder  = await foundOrder.save();
 
+        manualPaymentLogger.info('updating pending payment and sending  a payment confirmation mail' ,
+        {
+            'order'  : `${resultOrder._id}`
+        });
+
         sendMailForPaymentSuccess(resultOrder);
 
         res.status(200).json({
@@ -174,6 +222,9 @@ exports.login  = async ( req,res,next) =>{
 
 
     } catch (error) {
+        manualPaymentLogger.error('error occured while updating pending payment ' ,{
+            error : `${error}`
+        });
         next(error)
     }
 

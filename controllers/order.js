@@ -5,6 +5,9 @@ const Theatre = require('../models/theatre');
 
 const { validationResult} =  require('express-validator');
 
+const { userLogger }  = require('../logger');
+const { info } = require('winston');
+
 
 function sendMail(data){
     var transport = nodemailer.createTransport({
@@ -21,7 +24,7 @@ function sendMail(data){
        /*  to: 'user1@example.com, user2@example.com', */
        to:data.email,
         subject: 'Order Confirmed ,And Payment is still pending',
-        text: 'Please ping whatsapp for payment info. our whatsapp number +91 1234567890) ',
+        text: 'Please ping us whatsapp for payment info. our whatsapp number +91 1234567890) ',
         html: `
         <b>Hey ${data.fullName} 
         </b><br> This is your confirmed order details
@@ -42,9 +45,11 @@ function sendMail(data){
 
     transport.sendMail(mailOptions, (error, info) => {
         if (error) {
-            return console.log(error);
+            return userLogger.error('error occured while sending mail',{
+                error:`${error}`
+            });
         }
-        console.log('Message sent: %s', info.messageId);
+        userLogger.info('Message sent', { messageId : `${info.messageId}` });
 });
 
 
@@ -96,12 +101,16 @@ exports.createOrder = async (req,res,next) =>{
             slotName:slotName
         });
     
-        console.log(order.screenDate);
+        //console.log(order);
+
+        userLogger.info('order information received '  ,{
+            orderId : `${order._id}`
+        });
 
 
         let resultTheatre = await Theatre.findOne({theatreName:theatreName,screenDate:screenDate});
      //  console.log(await Theatre.find({theatreName:theatreName,screenDate:screenDate}));
-        console.log("obtained theatre " + resultTheatre);
+      //  console.log("obtained theatre " + resultTheatre);
 
         order.price  = resultTheatre.price;
         order.numberOfSeats = resultTheatre.seats;
@@ -118,10 +127,11 @@ exports.createOrder = async (req,res,next) =>{
             await resultTheatre.save();
         }
         else if(resultTheatre.isNight === true && slotName === "NIGHT"){
-            resultTheatre.isEvening = false;
+            resultTheatre.isNight = false;
             await resultTheatre.save();
         }
         else{
+            userLogger.info('Please enter the input in correct formate')
          return res.status(400).json({
                 message :"Please enter the input in correct formate"
             });
@@ -129,7 +139,13 @@ exports.createOrder = async (req,res,next) =>{
         
         let resultOrder  =  await order.save();
 
+        userLogger.info('updated the slot information ' ,{
+            orderId : `${resultOrder._id}`
+        });
+
         sendMail(resultOrder);
+
+        userLogger.info('mail as been sent to user provided mailId and response as been sent');
 
         res.status(201).json({
             message: 'Order created successfully',
@@ -137,6 +153,9 @@ exports.createOrder = async (req,res,next) =>{
           });
         
     } catch (err) {
+        userLogger.error('an error occured while creating order ' ,{
+            error : `${err}`
+        });
         if (!err.statusCode) {
             err.statusCode = 500;
           }
@@ -166,18 +185,27 @@ exports.availableSlots  =  async (req,res,next) => {
             throw error;
         }
     
-        console.log(req.query);
+        //console.log(req.query);
     
         const theatreName = req.query.theatreName;
         //const screenDate  =  req.query.screenDate;
     
         let screenDate = req.query.screenDate;
     
-        console.log("received date " + screenDate);
+      //  console.log("received date " + screenDate);
+
+      userLogger.info('checking available slot for date and theatre ' , {
+        theatreName : `${theatreName}`,
+        screenDate : `${screenDate}`
+      })
         
         const theatre = await Theatre.findOne({theatreName:theatreName,screenDate:screenDate});
         
-        console.log("found theatre " + theatre);
+       // console.log("found theatre " + theatre);
+       userLogger.info('found theatre ', {
+        theatreId : `${theatre._id}`
+       })
+
         if(theatre === null){
             const createdtheatre = new Theatre({
                 theatreName : theatreName,
@@ -186,13 +214,20 @@ exports.availableSlots  =  async (req,res,next) => {
 
          let resultTheatre  =  await createdtheatre.save();
 
+         userLogger.info('no theatre found so created a new theatre and response is sent' ,{
+            theatreId : `${resultTheatre._id}`
+         });
+
          res.status(200).json({
             message:"available slots",
             theatre:resultTheatre
-         })
+         });
 
         }
         else{
+            userLogger,info('response has been sent ' ,{
+                theatreId : `${theatre._id}`
+            })
             res.status(200).json({
                 message: "available slots",
                 theatre: theatre
@@ -200,6 +235,9 @@ exports.availableSlots  =  async (req,res,next) => {
         }
 
     } catch (err) {
+        userLogger.error('an error occured while checking for available slots' , {
+            error : `${err}`
+        })
         if (!err.statusCode) {
             err.statusCode = 500;
           }
