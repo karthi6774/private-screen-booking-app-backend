@@ -36,9 +36,9 @@ router.post('/order',[
           return false;
         }
       
-        const date = new Date(value);
-        //console.log(date); // 👉️ Invalid Date
-      
+       const date = new Date(value);
+       // console.log(new Date().toDateString()); // 👉️ Invalid Date
+       // console.log(new Date(value));
         const timestamp = date.getTime();
         //console.log(timestamp); // 👉️ NaN
       
@@ -46,9 +46,31 @@ router.post('/order',[
           // 👇️ this runs
           return false;
         }
+
+        let bDate  = new Date(new Date(value).toISOString().split('T')[0]).getTime();
+        let sDate  = new Date(new Date().toISOString().split('T')[0]).getTime();
+
+        //console.log(new Date(value).toISOString())
+       //console.log(new Date().toISOString())
+
+       //console.log(bDate);
+       //console.log(sDate);
+
+        if(bDate < sDate){
+            return false;
+        }
+        if(bDate >= sDate){
+          return true;
+        }
+
+
       
        return value;
-    }).withMessage("Enter Date in YYYY-MM-DD")
+    }).withMessage("Enter Date in YYYY-MM-DD"),
+    body('email').isEmail().withMessage('Enter a valid email').normalizeEmail(),
+    body('phoneNumber').isNumeric().isLength({max:10,min:10}).withMessage('Enter a valid phone number'),
+    body('price').isNumeric().withMessage('Enter correct price'),
+    body('numberOfSeats').isNumeric().withMessage('Enter correct number of  seats')
 ],orderController.createOrder);
 
 router.get('/available-slots',[
@@ -61,7 +83,8 @@ router.get('/available-slots',[
         }
       
         const date = new Date(value);
-        //console.log(date); // 👉️ Invalid Date
+        //console.log(new Date(new Date(value).toISOString().split('T')[0]).getTime()); // 👉️ Invalid Date
+       // console.log(new Date(new Date().toISOString().split('T')[0]).getTime());
       
         const timestamp = date.getTime();
        // console.log(timestamp); // 👉️ NaN
@@ -70,6 +93,26 @@ router.get('/available-slots',[
           // 👇️ this runs
           return false;
         }
+
+        let bDate  = new Date(new Date(value).toISOString().split('T')[0]).getTime();
+        let sDate  = new Date(new Date().toISOString().split('T')[0]).getTime();
+
+      // console.log(new Date(value).toISOString())
+      // console.log(new Date().toISOString())
+
+      // console.log(bDate);
+      // console.log(sDate);
+
+        if(bDate < sDate){
+            return false;
+        }
+        if(bDate >= sDate){
+          return true;
+        }
+        
+        
+
+        
       
        return value;
     }).withMessage("Enter Date in YYYY-MM-DD")

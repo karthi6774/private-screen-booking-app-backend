@@ -202,9 +202,9 @@ exports.availableSlots  =  async (req,res,next) => {
         const theatre = await Theatre.findOne({theatreName:theatreName,screenDate:screenDate});
         
        // console.log("found theatre " + theatre);
-       userLogger.info('found theatre ', {
+   /*     userLogger.info('found theatre ', {
         theatreId : `${theatre._id}`
-       })
+       }) */
 
         if(theatre === null){
             const createdtheatre = new Theatre({
@@ -225,7 +225,7 @@ exports.availableSlots  =  async (req,res,next) => {
 
         }
         else{
-            userLogger,info('response has been sent ' ,{
+            userLogger,info('theatre found and response has been sent ' ,{
                 theatreId : `${theatre._id}`
             })
             res.status(200).json({
