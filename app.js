@@ -2,6 +2,7 @@ const express = require('express')
 const mongoose = require("mongoose")
 const dotenv = require('dotenv');
 const morgan = require('morgan');
+const cors = require('cors')
 
 const orderRoutes  =  require('./routes/order');
 const authRoutes  =  require('./routes/auth');
@@ -21,12 +22,32 @@ app.use(express.json());
 app.use(morgan('combined'));
 
 
-app.use((req,res,next) =>{
+/* app.use((req,res,next) =>{
   res.setHeader('Access-Control-Allow-Origin','*');
   res.setHeader('Access-Control-Allow-Methods','GET, POST, PUT, PATCH, DELETE');
-  res.setHeader('Access-Control-Allow-Headers','Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers',i'Content-Type, Authorzation');
   next();
-});
+}); */
+
+
+const whitelist = [process.env.WHITE_LIST_01, process.env.WHITE_LIST_02]
+
+app.use(cors({
+  origin: function(origin, callback){
+    // allow requests with no origin 
+    // (like mobile apps or curl requests)
+   //if(!origin) return callback(null, true);
+
+    if(whitelist.indexOf(origin) === -1){
+      var msg = 'The CORS policy for this site does not ' +
+                'allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  allowedHeaders :['Content-Type', 'Authorization' ],
+  methods :['GET', 'POST', 'PUT', 'PATCH', 'DELETE','OPTIONS']
+}));
 
 
 //routes
