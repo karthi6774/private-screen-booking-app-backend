@@ -43,7 +43,6 @@ var corsOptionsDelegate = function (req, callback) {
 }
 
 
-
 app.use(cors(corsOptionsDelegate));
 
 

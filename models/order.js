@@ -47,7 +47,20 @@ const orderSchema  =  new Schema({
     paymentStatus:{
         type:Boolean,
         default:false
+    },
+    razorPayOrderId :{
+        type : String,
+        required:false
+    },
+    razorpayPaymentId :{
+        type : String,
+        required:false
+    },
+    razorpaySignature :{
+        type : String,
+        required:false
     }
+
     
 },
 {timestamps:true});
