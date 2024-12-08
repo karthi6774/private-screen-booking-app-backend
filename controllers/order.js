@@ -143,9 +143,9 @@ exports.createOrder = async (req,res,next) =>{
             orderId : `${resultOrder._id}`
         });
 
-        sendMail(resultOrder);
+        //sendMail(resultOrder);
 
-        userLogger.info('mail as been sent to user provided mailId and response as been sent');
+        //userLogger.info('mail as been sent to user provided mailId and response as been sent');
 
         res.status(201).json({
             message: 'Order created successfully',
