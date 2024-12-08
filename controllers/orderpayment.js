@@ -316,7 +316,7 @@ exports.verifyPaymentSignature  = async (req,res,next) =>{
                     'order'  : `${resultOrder._id}`
                 });
         
-                sendMailForPaymentSuccess(resultOrder);
+               // sendMailForPaymentSuccess(resultOrder);
         
                 res.status(200).json({
                     message: "Payment details updated successfully",
